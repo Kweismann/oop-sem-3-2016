@@ -2,6 +2,8 @@ import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 
+import java.awt.*;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -88,21 +90,33 @@ public class Main {
 
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
+
         float heidht = 1024.0f;
         float width = 800.0f;
         float x = 100.0f;
         float y = 100.0f;
+        float x1 = 70.0f;
+        float y1 = 70.0f;
+        float x2 = -70.0f;
+        float y2 = 70.0f;
+        float x3 = 100.0f;
+        float y3 = -100.0f;
+        float x4 = -100.0f;
+        float y4 = -100.0f;
         while ( !glfwWindowShouldClose(window) )
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-            glBegin(GL_POLYGON);
-            glVertex2d(-x/heidht,y/width);
+            glBegin(GL_TRIANGLE_STRIP);
+            glVertex2d(0,0);
+            glVertex2d(x1/heidht,y1/width);
+            glVertex2d(x2/heidht,y2/width);
             glColor3f(0.5f,0.0f,0.0f);
-            glVertex2d(x/heidht,y/width);
             glColor3f(0.0f,0.5f,0.0f);
-            glVertex2d(x/heidht,-y/width);
+            glVertex2d(x3/heidht,y3/width);
             glColor3f(0.0f,0.0f,0.6f);
-            glVertex2d(-x/heidht,-y/width);
+            glVertex2d(x4/heidht,y4/width);
+            glVertex2d(x1/heidht,y1/width);
+            glVertex2d(x2/heidht,y2/width);
             glEnd();
             glfwSwapBuffers(window); // swap the color buffers
             // Poll for window events. The key callback above will only be
