@@ -12,9 +12,8 @@ public class Main {
     // The window handle
     private long window;
 
-    public void run() {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
-
+    public void run()
+    {
         try {
             init();
             loop();
@@ -22,7 +21,8 @@ public class Main {
             // Free the window callbacks and destroy the window
             glfwFreeCallbacks(window);
             glfwDestroyWindow(window);
-        } finally {
+        } finally
+        {
             // Terminate GLFW and free the error callback
             glfwTerminate();
             glfwSetErrorCallback(null).free();
@@ -84,15 +84,24 @@ public class Main {
         GL.createCapabilities();
 
         // Set the clear color
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+        //glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
-        while ( !glfwWindowShouldClose(window) ) {
+        while ( !glfwWindowShouldClose(window) )
+        {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+            glBegin(GL_TRIANGLE_STRIP);
+            glColor3f(0.0f,0.0f,0.3f);
+            glVertex2d(-0.5f, -0.5f);//1
+            glVertex2d(-0.5f, 0.5f);//2
+            glColor3f(0.0f,0.3f,0.0f);
+            glVertex2d(0.5f, 0.5f);//3
+            glVertex2d(0.5f, -0.5f);//4
+
+            glEnd();
 
             glfwSwapBuffers(window); // swap the color buffers
-
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
