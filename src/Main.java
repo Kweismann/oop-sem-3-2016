@@ -43,8 +43,8 @@ public class Main {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
-        int WIDTH = 300;
-        int HEIGHT = 300;
+        int WIDTH = 1024;
+        int HEIGHT = 800;
 
         // Create the window
         window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL);
@@ -88,19 +88,22 @@ public class Main {
 
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
+        float heidht = 1024.0f;
+        float width = 800.0f;
+        float x = 100.0f;
+        float y = 100.0f;
         while ( !glfwWindowShouldClose(window) )
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-            glBegin(GL_TRIANGLE_STRIP);
-            glColor3f(0.0f,0.0f,0.3f);
-            glVertex2d(-0.5f, -0.5f);//1
-            glVertex2d(-0.5f, 0.5f);//2
-            glColor3f(0.0f,0.3f,0.0f);
-            glVertex2d(0.5f, 0.5f);//3
-            glVertex2d(0.5f, -0.5f);//4
-
+            glBegin(GL_POLYGON);
+            glVertex2d(-x/heidht,y/width);
+            glColor3f(0.5f,0.0f,0.0f);
+            glVertex2d(x/heidht,y/width);
+            glColor3f(0.0f,0.5f,0.0f);
+            glVertex2d(x/heidht,-y/width);
+            glColor3f(0.0f,0.0f,0.6f);
+            glVertex2d(-x/heidht,-y/width);
             glEnd();
-
             glfwSwapBuffers(window); // swap the color buffers
             // Poll for window events. The key callback above will only be
             // invoked during this call.
