@@ -2,10 +2,54 @@ import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 
+import java.awt.*;
+import java.util.Scanner;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
+
+class MOUSE
+{
+    private float mx;
+    private float my;
+    public void set(float x, float y){
+        this.mx = x;
+        this.my = y;
+    }
+    public float getX(){
+        return this.mx;
+    }
+    public float getY(){
+        return this.my;
+    }
+
+}
+
+class _point {
+    int x;
+    int y;
+    private boolean status;
+
+    public _point(){
+
+    }
+
+    public _point(int x,int y){
+        this.x = x;
+        this.y = y;
+        status = false;
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+}
 
 public class Main {
 
@@ -30,11 +74,8 @@ public class Main {
     }
 
     private void init() {
-        // Setup an error callback. The default implementation
-        // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
 
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
         if ( !glfwInit() )
             throw new IllegalStateException("Unable to initialize GLFW");
 
@@ -74,39 +115,63 @@ public class Main {
         // Make the window visible
         glfwShowWindow(window);
     }
-
+    public _point check(Point m1, Point m2, Point m3, Point m4) {
+        _point p = new _point();
+        float t = NULL;
+        try{
+            t = (m1.x - m2.x) / (m4.x - m2.x - m3.x + m1.x);
+        }
+        catch (Exception e){
+            return p;
+        }
+        p.x = (int)(m1.x + (m3.x - m1.x) * t);
+        p.y = (int)(m1.y + (m3.y - m1.y)*t);
+        if (p.x != m1.x && p.x != m2.x && p.x != m3.x && p.x != m4.x)
+            p.setStatus(true);
+        return p;
+    }
     private void loop() {
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
         GL.createCapabilities();
-
-        // Set the clear color
-        //glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-
-        // Run the rendering loop until the user has attempted to close
-        // the window or has pressed the ESCAPE key.
         float heidht = 1024.0f;
         float width = 800.0f;
-        float x = 100.0f;
-        float y = 100.0f;
+        Point points[] = new Point[4]; for (int i = 0; i < 4; i++) {points[i] = new Point();}
+        points[0].x = 100;
+        points[0].y = 100;
+        points[1].x = 130;
+        points[1].y = 170;
+        points[2].x = 200;
+        points[2].y = 170;
+        points[3].x = 250;
+        points[3].y = 100;
+        Point center = new Point(0,0);
+        Trapeze trapeze = new Trapeze(points,center);
+        float angle = 1;
+
         while ( !glfwWindowShouldClose(window) )
         {
+            trapeze.rotate(angle);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-            glBegin(GL_POLYGON);
-            glVertex2d(-x/heidht,y/width);
-            glColor3f(0.5f,0.0f,0.0f);
-            glVertex2d(x/heidht,y/width);
-            glColor3f(0.0f,0.5f,0.0f);
-            glVertex2d(x/heidht,-y/width);
-            glColor3f(0.0f,0.0f,0.6f);
-            glVertex2d(-x/heidht,-y/width);
+            glBegin(GL_LINE_STRIP);
+            glVertex2d(1.0f,0.0f);
+            glVertex2d(-1.0f,0.0f);
             glEnd();
-            glfwSwapBuffers(window); // swap the color buffers
-            // Poll for window events. The key callback above will only be
-            // invoked during this call.
+            glBegin(GL_LINE_STRIP);
+            glVertex2d(0.0f,-1.0f);
+            glVertex2d(0.0f,1.0f);
+            glEnd();
+//            glBegin(GL_LINE_STRIP);
+//            glVertex2d(0.0f,0.0f);
+//            glVertex2d(trapeze.getPoint(0).x/heidht, trapeze.getPoint(0).y/width);
+//            glEnd();
+            glBegin(GL_TRIANGLE_STRIP);
+            glVertex2d(trapeze.getPoint(0).x/heidht, trapeze.getPoint(0).y/width);
+            glVertex2d(trapeze.getPoint(1).x/heidht, trapeze.getPoint(1).y/width);
+            glVertex2d(trapeze.getPoint(2).x/heidht, trapeze.getPoint(2).y/width);
+            glVertex2d(trapeze.getPoint(3).x/heidht, trapeze.getPoint(3).y/width);
+            glVertex2d(trapeze.getPoint(0).x/heidht, trapeze.getPoint(0).y/width);
+            glVertex2d(trapeze.getPoint(1).x/heidht, trapeze.getPoint(1).y/width);
+            glEnd();
+            glfwSwapBuffers(window);
             glfwPollEvents();
         }
     }
