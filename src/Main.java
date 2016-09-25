@@ -1,9 +1,7 @@
-import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 
 import java.awt.*;
-import java.util.Scanner;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -11,44 +9,16 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 class MOUSE
+
 {
-    private float mx;
-    private float my;
-    public void set(float x, float y){
-        this.mx = x;
-        this.my = y;
-    }
-    public float getX(){
-        return this.mx;
-    }
-    public float getY(){
-        return this.my;
+    private Point position;
+
+    public void setPosition(Point p){this.position = p;}
+
+    public Point getPosition(){
+        return this.position;
     }
 
-}
-
-class _point {
-    int x;
-    int y;
-    private boolean status;
-
-    public _point(){
-
-    }
-
-    public _point(int x,int y){
-        this.x = x;
-        this.y = y;
-        status = false;
-    }
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
 }
 
 public class Main {
@@ -56,12 +26,11 @@ public class Main {
     // The window handle
     private long window;
 
-    public void run()
+    public void run(int WIDTH, int HEIGHT)
     {
-        try {
-            init();
-            loop();
-
+        try
+        {
+            init(WIDTH, HEIGHT);
             // Free the window callbacks and destroy the window
             glfwFreeCallbacks(window);
             glfwDestroyWindow(window);
@@ -73,7 +42,11 @@ public class Main {
         }
     }
 
-    private void init() {
+
+
+
+    private void init(int WIDTH, int HEIGHT)
+    {
         GLFWErrorCallback.createPrint(System.err).set();
 
         if ( !glfwInit() )
@@ -83,21 +56,50 @@ public class Main {
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
-
-        int WIDTH = 1024;
-        int HEIGHT = 800;
-
         // Create the window
         window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
-        // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-                glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
+        Point points[] = new Point[4]; for (int i = 0; i < 4; i++) {points[i] = new Point();}
+        points[0].x = 100; points[0].y = 100; points[1].x = 200;points[1].y = 100;points[2].x = 200;points[2].y = 200;points[3].x = 100;points[3].y = 200;
+
+        MOUSE mouse = new MOUSE();
+        Point center = new Point(0,0);
+        Trapeze trapeze = new Trapeze(points,center);
+        // Setup a mouse position callback.
+        glfwSetCursorPosCallback(window, new GLFWCursorPosCallback(){
+            @Override
+            public void invoke(long window, double xpos, double ypos) {
+                System.out.print("SCAN x: " + xpos + " y: " + ypos + "\n");
+                mouse.setPosition(new Point((int)xpos, (int)ypos));
+         }
         });
 
+        // Setup a mouse key callback.
+        glfwSetMouseButtonCallback(window, (new GLFWMouseButtonCallback() {
+
+            @Override
+            public void invoke(long window, int button, int action, int mods) {
+                if(button == 0) {
+                    if(action == GLFW_PRESS) {
+                        System.out.print("x: " + mouse.getPosition().x + " y: " + mouse.getPosition().y + "\n");
+                        trapeze.setCenter(mouse.getPosition());
+                    }
+                }
+            }
+        }));
+
+        // Setup a key callback. It will be called every time a key is pressed, repeated or released.
+        glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
+        {
+                    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+                        glfwSetWindowShouldClose(window, true);
+                    if (key == GLFW_KEY_Q)
+                        myrotate(trapeze, 1);
+                    if (key == GLFW_KEY_E)
+                        myrotate(trapeze, -1);
+                });
         // Get the resolution of the primary monitor
         GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         // Center our window
@@ -114,42 +116,21 @@ public class Main {
 
         // Make the window visible
         glfwShowWindow(window);
+        loop(WIDTH, HEIGHT, trapeze);
     }
-    public _point check(Point m1, Point m2, Point m3, Point m4) {
-        _point p = new _point();
-        float t = NULL;
-        try{
-            t = (m1.x - m2.x) / (m4.x - m2.x - m3.x + m1.x);
-        }
-        catch (Exception e){
-            return p;
-        }
-        p.x = (int)(m1.x + (m3.x - m1.x) * t);
-        p.y = (int)(m1.y + (m3.y - m1.y)*t);
-        if (p.x != m1.x && p.x != m2.x && p.x != m3.x && p.x != m4.x)
-            p.setStatus(true);
-        return p;
+
+
+    public void myrotate(Trapeze trapeze, int x)
+    {
+        trapeze.rotate(x);
     }
-    private void loop() {
+
+    private void loop(int WIDTH, int HEIGHT, Trapeze trapeze) {
         GL.createCapabilities();
-        float heidht = 1024.0f;
-        float width = 800.0f;
-        Point points[] = new Point[4]; for (int i = 0; i < 4; i++) {points[i] = new Point();}
-        points[0].x = 100;
-        points[0].y = 100;
-        points[1].x = 130;
-        points[1].y = 170;
-        points[2].x = 200;
-        points[2].y = 170;
-        points[3].x = 250;
-        points[3].y = 100;
-        Point center = new Point(0,0);
-        Trapeze trapeze = new Trapeze(points,center);
-        float angle = 1;
 
         while ( !glfwWindowShouldClose(window) )
         {
-            trapeze.rotate(angle);
+
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
             glBegin(GL_LINE_STRIP);
             glVertex2d(1.0f,0.0f);
@@ -159,17 +140,13 @@ public class Main {
             glVertex2d(0.0f,-1.0f);
             glVertex2d(0.0f,1.0f);
             glEnd();
-//            glBegin(GL_LINE_STRIP);
-//            glVertex2d(0.0f,0.0f);
-//            glVertex2d(trapeze.getPoint(0).x/heidht, trapeze.getPoint(0).y/width);
-//            glEnd();
             glBegin(GL_TRIANGLE_STRIP);
-            glVertex2d(trapeze.getPoint(0).x/heidht, trapeze.getPoint(0).y/width);
-            glVertex2d(trapeze.getPoint(1).x/heidht, trapeze.getPoint(1).y/width);
-            glVertex2d(trapeze.getPoint(2).x/heidht, trapeze.getPoint(2).y/width);
-            glVertex2d(trapeze.getPoint(3).x/heidht, trapeze.getPoint(3).y/width);
-            glVertex2d(trapeze.getPoint(0).x/heidht, trapeze.getPoint(0).y/width);
-            glVertex2d(trapeze.getPoint(1).x/heidht, trapeze.getPoint(1).y/width);
+            glVertex2d((float)trapeze.getPoint(0).x/HEIGHT * 2, (float)trapeze.getPoint(0).y/WIDTH * 2);
+            glVertex2d((float)trapeze.getPoint(1).x/HEIGHT * 2, (float)trapeze.getPoint(1).y/WIDTH * 2);
+            glVertex2d((float)trapeze.getPoint(2).x/HEIGHT * 2, (float)trapeze.getPoint(2).y/WIDTH * 2);
+            glVertex2d((float)trapeze.getPoint(3).x/HEIGHT * 2, (float)trapeze.getPoint(3).y/WIDTH * 2);
+            glVertex2d((float)trapeze.getPoint(0).x/HEIGHT * 2, (float)trapeze.getPoint(0).y/WIDTH * 2);
+            glVertex2d((float)trapeze.getPoint(1).x/HEIGHT * 2, (float)trapeze.getPoint(1).y/WIDTH * 2);
             glEnd();
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -178,7 +155,9 @@ public class Main {
 
     public static void main(String[] args)
     {
-        new Main().run();
+        int WIDTH = 1000;
+        int HEIGHT = 1000;
+        new Main().run(WIDTH, HEIGHT);
     }
 
 }
